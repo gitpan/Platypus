@@ -1,0 +1,281 @@
+1999-08-25  brian moseley  <ix@maz.org>
+
+	VERSION 0.08:
+
+	* Cfg/Cfg.pm (new): allow this class to be instantiated. merge a
+	hashref of options.
+	(get): hide the goofy namespacing
+	(PlatypusSessionLevels): remove this directive now that we dont
+	use Apache::Session::Tree
+	(config): replaced by constructor
+
+	* Cfg/Makefile.PL: remove PlatypusSessionLevels
+
+	* Platypus/Application.pm (new): accept application options
+	(handle_request): delegate config creation to factory. use config
+	get method. handle HEAD reqeusts.
+	(config): remove
+	(opts): add ivar for configuration options
+
+	* Platypus/Component.pm (link): escape uri components
+	(self_link): escape uri components
+
+	* Platypus/FileSssion.pm: implement with Apache::Session::File
+	instead of Apache::Session::Tree.
+
+	* Platypus/ObjectFactory.pm: use config get method.
+	(_wrap_component): only wrap the script with 'sub output' if the
+	script didnt already include it.
+
+	* Platypus/Response.pm: allow content_type to be set. default it
+	to "text/plain".
+
+	* Platypus/SessionManager.pm (construct_url): turn relative urls
+	into absolute urls by prepending the current location
+	(extract_id): set empty string in path_info if it originally only
+	contained a session id
+
+1999-08-20  brian moseley  <ix@maz.org>
+
+	* Platypus/Application.pm (handle_request): only try to save the
+	session if it exists - solves problems when session restoration or
+	creation dies.
+
+	* Platypus/ObjectFactory.pm (create_component): cache components
+	by package, not by uri, since the uri contains the path_info which
+	may be different for every invocation of the same script.
+
+	* Platypus/SessionManager.pm (construct_url): clean path_info out
+	of the script_name before using it as a self-referencing uri
+	(extract_id): correctly set new path_info after extracting
+	id. also set new uri.
+
+	VERSION 0.07:
+
+	* Cfg/Cfg.pm: (PlatypusAuthenRequire): add
+	(PlatypusHandlerReload): rename to PlatypusComponentReload
+
+	* Cfg/Makefile.PL:
+	(PlatypusAuthenRequire): should platypus perform native
+	authentication?
+
+	* Platypus/Application.pm (handle_request): if a session id is
+	present in the request, restore its session. otherwise, if
+	authentication is required, authenticate any credentials present
+	in the request; if that fails, return a challenge to the
+	user. create a new session on successful authentication. also,
+	replace the three component action methods with a single
+	method. this makes component scripts look lots more like
+	Apache::Registry scripts and narrows the learning curve quite a
+	bit. in the future we can revisit component architecture.
+
+	* Platypus/Authenticator.pm: base class for challenging the user
+	for credentials and authenticating them. base class'
+	authentication always returns true to force subclassing.
+
+	* Platypus/Component.pm (link, self_link): delegate to session
+	manager for url construction
+	(output): combine the 3 action methods into one
+
+	* Platypus/NullSession.pm: a session subclass that doesn't do
+	anything. useful if you want to be able store stuff in a session
+	object within a single request cycle but dont want to store the
+	session anywhere. save doesnt do anything. will be more
+	interesting in future component architectures.
+
+	* Platypus/ObjectFactory.pm (create_authenticator): add
+	(create_session): if the configured session method is 'none', use
+	NullSession class.
+
+	* Platypus/SessionManager.pm (construct_url): allow for
+	nonexistent ids, like with NullSession.
+	(create_session): only create new sessions.
+	(restore_session): explicit method for restoring an existing
+	session.
+
+	VERSION 0.06:
+
+	* Cfg/Cfg.pm (PlatypusSessionBase): add
+	(PlatypusSessionLevels): add
+	(PlatypusSessionMethod): add
+
+	* Cfg/Makefile.PL: add config directives for session management
+	(PlatypusSessionBase): base directory for file-based session store
+	(PlatypusSessionLevels): the number of levels of the directory
+	tree for file-based session store
+	(PlatypusSessionMethod): specify session management method - File
+	or Memory
+
+	* Platypus/Application.pm (new): remove session store, no longer
+	necessary with Apache::Session. add session manager.
+	(handle_request): set application for context. session manager
+	restores and saves sessions. remove wack LF from end of $@ when
+	handling exceptions. abort and cleanup_error now return a HTTP
+	status code.
+	(session_manager): add ivar
+
+	* Platypus/Context.pm (application): add ivar
+	(log): delegate to application
+	(session_manager): delegate to application
+
+	* Platypus/FileSession.pm: file-based session management, uses
+	Apache::Session::Tree.
+
+	* Platypus/MemorySession.pm: memory-based session management, uses
+	Apache::Session::SingleThread.
+
+	* Platypus/ObjectFactory.pm (create_session): create a session
+	subclass, perhaps with the help of some configuration. default to
+	file-based session management.
+	(create_session_manager): add
+
+	* Platypus/Request.pm (extract_id): session manager does this
+	now
+
+	* Platypus/Session.pm: becomes a base class. sets up a hashref
+	ivar named '_dictionary' and expects the init method to set up
+	another ivar named '_impl'.
+	(destroy): remove the session from the session store
+	(save): save any changed state to the session store
+
+	* Platypus/SessionManager.pm: manage interactions with the session
+	layer. responsible for managing session recognition between
+	requests by extracting session ids from requests and by
+	constructing urls with embedded session ids.
+
+	* Platypus/SessionStore.pm: removed, no longer necessary with
+	Apache::Session.
+
+	VERSION 0.05:
+
+	* Platypus/Application.pm (config): add method to retrieve
+	and merge configuration data
+	(handle_request): use new config method
+
+	* Platypus/HTMLResponse.pm (as_string): add method to retrieve a
+	string version of the response
+
+	* Platypus/ObjectFactory.pm (create_component): if HandlerReload
+	config is set, recompile the component if its changed on disk
+	since the last time it was compiled
+
+	* Platypus/Response.pm (as_string): add method to retrieve a
+	string version of the response
+
+1999-08-15  brian moseley  <ix@maz.org>
+
+	VERSION 0.04:
+
+	* Platypus/Application.pm: move all the factory methods into
+	Platypus::ObjectFactory
+	(new): create session store with the factory
+	(init): create the app's factory
+	(handle_request): create context, request, response, component with
+	the app's factory. lose the notion of request handlers. instead,
+	just get a new component from the factory every time and call the
+	handling methods on it directly.
+	(factory): add
+	(mk_context): remove
+	(mk_handler): remove
+	(mk_request): remove
+	(mk_response): remove
+	(mk_session): remove
+	(mk_session_store): remove
+	(restore_session): create session with the app's factory
+	(_handler): remove
+
+	* Platypus/Component.pm (new): add initializer
+	(init): add
+
+	* Platypus/Response.pm (prepend_to_response): self explanatory
+
+	* Platypus/ObjectFactory.pm: new class for creating the various
+	objects used in Platypus. meant to be subclassed.
+
+	VERSION 0.03:
+
+	* many places: stylistic cleanups
+
+	* Platypus/Application.pm (new): use server log as log ivar
+	(handle_request): get directory configuration object and do some
+	pre-handler checks. get rid of explicit component config object;
+	its implicit in the new component structure. get rid of the
+	rc-style exception handling which was previously necessary. create
+	global context object and load it up with per-request objects.
+	(checkup): move these checks out of Apache::PerlRun. check for
+	Options ExecCGI and executable bit if PlatypusCompileCheck config
+	directive is On.
+	(mk_config): remove
+	(mk_context): add
+	(mk_handler): replace req argument with con
+	(mk_response): replace req argument with con
+	(mk_session): replace log argument with con
+	(mk_session_store): remove log argument
+	(restore_session): replace req argument with con
+	(save_session): replace ses and log arguments with con
+
+	* Playtpus/HTMLResponse.pm (new): remove log argument
+	(respond): remove log argument
+
+	* Platypus/RequestHandler.pm (new): replace req argument with
+	con. remove can_compile step, as its now checked earlier, in
+	Application. dont bother catching exceptions except for when
+	compiling; die with the correct error message in that case. create
+	component object after compiling component class.
+	(can_compile): remove
+	(create_component): add
+	(generate_output): delegate to the component
+	(namespace): all components go in the Platypus::Component
+	namespace, with no virtual host component
+	(perform_action): delegate to the component
+	(sub_wrap): remove unneeded mark_line. compile component code into
+	subclasses of Platypus::Component.
+	(take_values): delegate to the component
+
+	* Platypus/Cfg: add two new configuration directives -
+	PlatypusCompileCheck, PlatypusHandlerReload
+
+	* Platypus/Component.pm: new base class for components. rather
+	than having components cripts provid named subs to be eval'd by
+	the request handler, we have them provide methods that override
+	methods in Platypus::Component.
+
+	* Platypus/Context.pm: new class that is used as the method of
+	passing global and request-time information around between other
+	objects. created by the Application, goes out of scope at the end
+	of it's request handling method.
+
+	* Platypus/Util.pm (extract_event): bah throw this away. this
+	should be component or application specific.
+	
+1999-08-14  brian moseley  <ix@maz.org>
+
+	* Platypus/Application.pm (handle_request): create log object and
+	pass it around where important
+	(mk_config): log argument
+	(mk_response): log argument
+	(mk_session): log argument
+	(mk_sesssion_store): log argument
+	(restore_session): debug restoration and creation events
+	(save_session): debug save event
+
+	* Platypus/HTMLResponse.pm (init): log argument. use accessor
+	methods to set ivars.
+	(append_to_title): new method that appends a given string to the
+	existing title, if any, separating them with the title separator
+	ivar
+	(author): author ivar - should be an email address
+	(head): only print header tags corresponding to existing ivars -
+	title, author.
+	(respond): log argument
+	(title_separator): new ivar, used to separate title components
+
+	* Platypus/Response.pm (new): pass arguments through to init()
+	(append_to_content): accept scalar refs, array refs and scalars
+
+1999-08-10  brian moseley  <ix@maz.org>
+
+	* initial import of Platypus, yet another web application
+	framework. enough functionality on which to base a simple
+	application.
+

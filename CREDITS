@@ -1,0 +1,21 @@
+
+Brian Moseley <ix@maz.org> writes all of the Platypus code. Well
+that's the case today anyway.
+
+Doug MacEachern <dougm@pobox.com> writes mod_perl and was the
+inspiration and motivation for me to commit the Platypus concepts to
+code. He's the man.
+
+Dean Gaudet <dgaudet@arctic.org> answers lots of Apache-related
+questions and is generally one of the best programming resources
+walking the earth.
+
+Jeffrey Baker <jwb@cp.net> writes Apache::Session, which means one less
+component for Platypus to implement.
+
+Wayne Bremser <wb@harlem.org> created the web site. Le web site, as we
+say in France.
+
+Spacebar and Evolve ICB (maz, $!, whatever, unga)
+
+Sharkman: Chicks dig the Tahoe.

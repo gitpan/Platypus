@@ -1,0 +1,30 @@
+
+Platypus is a web application framework built on top of Apache
+and mod_perl. It's still in very early stages of development,
+but even now it offers many more application facilities than
+CGI or Apache::Registry.
+
+The web site for Platypus is at:
+  http://www.maz.org/platypus/
+
+The standard goodies, like a mailing list and a bug database,
+will be supplied if the market demands them.
+
+Platypus is developed in the spirit of the Apache and mod_perl
+projects. Find more information about them at:
+  http://www.apache.org/httpd.html
+  http://perl.apache.org/
+
+If you're doing application development with mod_perl, consider
+picking up Lincoln Stein and Doug MacEachern's book "Writing
+Apache Modules with Perl and C". It's a fabulous resource:
+  http://www.modperl.com/
+
+I think that's it. Enjoy -
+  Brian Moseley <ix@maz.org>
+
+Oh btw:
+
+The source files in this distribution are 
+Copyright (C) 1999, Brian Moseley, and are licensed for
+use under the same terms as Perl itself.

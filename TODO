@@ -1,0 +1,27 @@
+
+features
+========
+
+ * cache each instance of rh in the session, including $cfg?
+
+ * support DBI-based session store
+
+
+framework structure
+===================
+
+ * is everything properly subclassable?
+
+ * how to separate html output stuff from rh code sections?
+
+ * html dom api?
+
+ * has apache been well enough compartmentalized?
+
+
+documentation
+=============
+
+ * diagrams
+
+ * perldoc
